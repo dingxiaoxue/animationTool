@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>配置化生成动画</title>
+  <style>
+    .target-animation-none {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>实现一个可灵活可配置的逐帧动画、运动动画、CSS animation.css的动画插件</h1>
+  <div class="" id="animationEle" />
+  <script>
+    const continuAnimation = [{
+      "animation-type": "default",
+      "animation-name": "animate__shakeX",
+      "animation-count": 11,
+      "animation-duration": "415ms",
+      "animation-delay": "415ms",
+      "animation-iteration-count": "1",
+      "animation-fill-mode": "forwards"
+    }, {
+      "background-image": "http://s3plus.meituan.net/v1/mss_0ddf9b250a1b4db28fb1d9ad764b2853/files/ditto/icon/100016bg.png",
+      "background-size": "auto 88px",
+      "background-position": "0 0",
+      "width": "88px",
+      "height": "88px",
+      "animation-type": "gif",
+      "start": "[250,250]",
+      "end": "[250,250]",
+      "animation-count": 11,
+      "animation-duration": "415ms",
+      "animation-delay": "415ms",
+      "animation-iteration-count": "infinite",
+      "animation-direction": "normal",
+      "animation-fill-mode": "none",
+    }, {
+      "background-image": "http://s3plus.meituan.net/v1/mss_0ddf9b250a1b4db28fb1d9ad764b2853/files/ditto/icon/100016bg.png",
+      "background-size": "auto 88px",
+      "background-position": "-88px 0",
+      "width": "88px",
+      "height": "88px",
+      "animation-type": "motion",
+      "start": "[250,250]",
+      "end": "[40,40]",
+      "animation-count": 11,
+      "animation-duration": "664ms",
+      "animation-delay": "0s",
+      "animation-iteration-count": "1",
+      "animation-direction": "normal",
+      "animation-fill-mode": "none",
+    }, {
+      "background-image": "http://s3plus.meituan.net/v1/mss_0ddf9b250a1b4db28fb1d9ad764b2853/files/ditto/icon/100016bg.png",
+      "background-size": "auto 88px",
+      "background-position": "0 0",
+      "width": "88px",
+      "height": "88px",
+      "animation-type": "gif",
+      "animation-count": 11,
+      "animation-timing-function": "steps(11, end)",
+      "distance": "88",
+      "start": "[40,40]",
+      "end": "[40,40]",
+      "animation-duration": "581ms",
+      "animation-delay": "0s",
+      "animation-iteration-count": "1",
+      "animation-direction": "normal",
+      "animation-fill-mode": "forwards",
+    }];
+    let animationClass = "target-animation0";
+    let i = 0;
+    let animationEle;
+
+    const continuAnimations = continuAnimation && JSON.parse(continuAnimation) || [];
+    // 兼容处理
+    let pfx = ["webkit", "moz", "MS", "o", ""];
+    function prefixedEventListener(element, type, callback, addOrRemove) {
+      for (var p = 0; p < pfx.length; p++) {
+        if (!pfx[p]) type = type.toLowerCase();
+        element[addOrRemove](pfx[p] + type, callback, false);
+      }
+    }
+    function renderingAnimationCSS(continuAnimation) {
+      let continuekeyframes = "";
+      continuAnimation.map((item, index) => {
+        if (item["animation-type"] === "gif") {
+          continuekeyframes += `
+            .target-animation${index}{
+            width:${item.width};
+            height:${item.height};
+            background-image: url('${item["background-image"]}');
+            background-size: ${item["background-size"]};
+            position: absolute;
+            background-position: ${item["background-position"]}; 
+            top: ${JSON.parse(item.start)[1]}px;
+            z-index: 10;
+            left: ${JSON.parse(item.start)[0]}px;
+            animation-name:gif${index};
+            animation-duration:${item["animation-duration"]};
+            animation-timing-function:steps(${parseInt(item.bgMaxWidth) / parseInt(item.width) - 1
+            }, end);
+            animation-delay:${item["animation-delay"]};
+            animation-iteration-count :${item["animation-iteration-count"]};
+            animation-direction:${item["animation-direction"]};
+            animation-fill-mode: ${item["animation-fill-mode"]};
+        }
+        @keyframes gif${index} {
+            0% {
+                background-position: ${item["background-position"]}; 
+            }
+            100% {
+                background-position: -${parseInt(item.bgMaxWidth) - parseInt(item.width)
+            }px 0;
+            }
+        }`;
+        } else {
+          continuekeyframes += `
+         .target-animation${index}{
+            width:${item.width};
+            height:${item.height};
+            background-image: url('${item["background-image"]}');
+            background-size: ${item["background-size"]};
+            position: absolute;
+            background-position: ${item["background-position"]}; 
+            top: ${JSON.parse(item.start)[1]}px;
+            z-index: 10;
+            left: ${JSON.parse(item.start)[0]}px;
+            animation: run-go${index} ${item["animation-duration"]} ${item["animation-delay"]
+            } ${item["animation-iteration-count"]} linear, run-over${index} ${item["animation-duration"]
+            } ${item["animation-delay"]} ${item["animation-iteration-count"]} ${item["animation-timing-function"]
+            };
+        }
+        @keyframes run-go${index} {
+            0% {
+                left:${JSON.parse(item.start)[0]}px;
+            }
+
+            100% {
+                left: ${JSON.parse(item.end)[0]}px;
+            }
+        }
+        @keyframes run-over${index} {
+            0% {
+                top: ${JSON.parse(item.start)[1]}px;
+            }
+
+            100% {
+                top: ${JSON.parse(item.end)[1]}px;
+            }
+        }
+        `;
+        }
+      });
+      const style = document.createElement("style");
+      style.id = `animation-${id}`;
+      style.setAttribute("type", "text/css");
+      style.innerHTML = continuekeyframes;
+      document.head.appendChild(style);
+    }
+    function handleAnimation() {
+      if (continuAnimations.length >= 1) {
+        continuAnimations.shift();
+        animationClass = `target-animation${i}`;
+        i++;
+      }
+    }
+    onMount(() => {
+      animationEle = document.querySelector("#animationEle");
+      renderingAnimationCSS(continuAnimations);
+      prefixedEventListener(
+        animationEle,
+        "animationend",
+        handleAnimation,
+        "addEventListener"
+      );
+      handleAnimation();
+    });
+    onDestroy(() => {
+      // 清除 handleAnimation
+      // 清除 style
+      var styleTag = document.getElementById(`animation-${id}`);
+      document.head.removeChild(styleTag);
+      prefixedEventListener(
+        animationEle,
+        "animationend",
+        handleAnimation,
+        "removeEventListener"
+      );
+    });
+  </script>
+</body>
+
+</html>

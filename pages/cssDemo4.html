@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动画1</title>
+    <style>
+            /* 参数：
+            公共参数：[背景图片url，宽，高，背景图片最大长度,移动距离]
+            动画1：[动画的持续时间]
+            动画2：[动画的持续时间,动画延迟的时间，动画的循环次数]
+            动画3：[动画的持续时间,动画延迟的时间，动画的循环次数] */
+            .target-animation{
+                width: 60px;
+                height: 60px;
+                background-image: url('http://s3plus.meituan.net/v1/mss_0ddf9b250a1b4db28fb1d9ad764b2853/files/ditto/icon/stars.png');
+                background-size: auto 60px;
+                position: absolute;
+                bottom: 40px;
+                z-index: 10;
+                right: 40px;
+                animation: run-go 3s 2s 1 linear, run-over 3s 2s 1 cubic-bezier(.66,.1,1,.41);
+            }
+            /* 参数位置信息：起点坐标[x,y] 终点坐标:[x,y] */
+            @keyframes run-go {
+                0% {
+                    right: 40px;
+                    transform: scale(0.7);
+                    background-position: -1740px 0;
+                }
+
+                100% {
+                    right: 600px;
+                    transform: scale(0.45);
+                    background-position: -1740px 0;
+                }
+            }
+           /* 参数位置信息：起点坐标[x,y] 终点坐标:[x,y] */
+            @keyframes run-over {
+                0% {
+                    bottom: 40px;
+                    background-position: -1740px 0;
+                }
+
+                100% {
+                    bottom: 800px;
+                    background-position: -1740px 0;
+                }
+            }
+    </style>
+</head>
+
+<body>
+    <div class="target-animation"></div>
+</body>
+
+</html>

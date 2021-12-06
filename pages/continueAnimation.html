@@ -1,0 +1,200 @@
+<script>
+    import { onDestroy, onMount } from "svelte";
+    import { object2Style } from "ditto-tools";
+    import ditto from "ditto-core";
+  
+    const usebindEventing = ditto.$event.usebindEventing;
+    export let childConfig;
+    export let animationClass;
+    export let i;
+    // @ts-ignore
+    const { props, id } = childConfig;
+    const { continuAnimation } = props;
+      // function setTimeoutAnimation() {
+  //   for (let i = 0; i < continuAnimations.length; i++) {
+  //     startTime +=
+  //       parseInt(continuAnimations[i]["animation-duration"]) +
+  //       parseInt(continuAnimations[i]["animation-delay"]);
+  //     console.log("22222222", new Date().getTime(), startTime);
+  //     setTimeout(() => {
+  //       console.log(i);
+  //       animationClass = `target-animation${i}`;
+  //       console.log("44444", new Date().getTime(), animationClass);
+  //     }, startTime);
+  //   }
+  // }
+    onMount(() => {
+      const continuAnimations = JSON.parse(continuAnimation);
+      console.log("continuAnimation", continuAnimations);
+      renderingAnimationCSS(continuAnimations);
+      animationClass = "";
+      i = 0;
+      // prefixer helper function
+      var pfx = ["webkit", "moz", "MS", "o", ""];
+      function prefixedEventListener(element, type, callback) {
+        for (var p = 0; p < pfx.length; p++) {
+          if (!pfx[p]) type = type.toLowerCase();
+          element.addEventListener(pfx[p] + type, callback, false);
+        }
+      }
+      var animationEle = document.querySelector("#animationEle");
+      // let startTime = 0;
+      // for (let i = 0; i < continuAnimations.length; i++) {
+      //   console.log("22222222", new Date().getTime(), `target-animation${i}`);
+      //   startTime +=
+      //     parseInt(continuAnimations[i]["animation-duration"]) +
+      //     parseInt(continuAnimations[i]["animation-delay"]);
+      //   console.log("22222222", new Date().getTime(), startTime);
+      //   setTimeout(() => {
+      //     console.log(i);
+      //     animationClass = `target-animation${i}`;
+      //     console.log(Date.now() - start);
+      //     // animationClass= i<2?`target-animation${i+1}`:`target-animation-none`;
+      //     console.log("44444", new Date().getTime(), animationClass);
+      //   }, startTime);
+      // }
+      // for(let i=0;i<continuAnimations.length;i++){
+      //     console.log('22222222',new Date().getTime(),`target-animation${i}`)
+      //     const timer=(parseInt(continuAnimations[i]['animation-duration'])+parseInt(continuAnimations[i]['animation-delay']))*1000;
+      //     console.log('22222222',new Date().getTime(),timer);
+      //     prefixedEventListener(animationEle,"animationend",function(e){
+      //         animationClass= `target-animation${i}`
+      //         console.log("333333333333333333",new Date().getTime(),animationClass);
+      //         console.log(Date.now() - start)
+      //     });
+      //     // setTimeout(()=>{
+      //     //     console.log(i)
+      //     //     animationClass= `target-animation${i}`;
+      //     //     console.log(Date.now() - start)
+      //     //     // animationClass= i<2?`target-animation${i+1}`:`target-animation-none`;
+      //     //     console.log('44444',new Date().getTime(),animationClass)
+      //     // },timer);
+      // }
+      
+  
+      // firstAnimation
+  
+      function handleAniation(){
+          if(continuAnimations.length >= 1) {
+              continuAnimations.shift();
+              animationClass= `target-animation${i}`;
+              i++;
+          }
+              // animationClass= `target-animation${i}`
+              // console.log("333333333333333333",new Date().getTime(),animationClass);
+              // console.log(Date.now() - start)
+      }
+      prefixedEventListener(animationEle,"animationend", handleAniation);
+  
+      handleAniation();
+      
+  
+    });
+    //   animation: gif${index} ${item["animation-duration"]} steps(${
+    //           parseInt(item.bgMaxWidth) / parseInt(item.width) - 1
+    //         }, end) ${item["animation-delay"]} ${
+    //           item["animation-iteration-count"]
+    //         } normal;
+    function renderingAnimationCSS(continuAnimation) {
+      let continuekeyframes = "";
+      continuAnimation.map((item, index) => {
+        console.log(item, index);
+        if (item["animation-type"] === "gif") {
+          continuekeyframes += `
+              .target-animation${index}{
+              width:${item.width};
+              height:${item.height};
+              background-image: url('${item["background-image"]}');
+              background-size: ${item["background-size"]};
+              position: absolute;
+              background-position: ${item["background-position"]}; 
+              top: ${JSON.parse(item.start)[1]}px;
+              z-index: 10;
+              left: ${JSON.parse(item.start)[0]}px;
+              animation-name:gif${index};
+              animation-duration:${item["animation-duration"]};
+              animation-timing-function:steps(${
+                parseInt(item.bgMaxWidth) / parseInt(item.width) - 1
+              }, end);
+              animation-delay:${item["animation-delay"]};
+              animation-iteration-count :${item["animation-iteration-count"]};
+              animation-direction:${item["animation-direction"]};
+              animation-fill-mode: ${item["animation-fill-mode"]};
+          }
+          @keyframes gif${index} {
+              0% {
+                  background-position: ${item["background-position"]}; 
+              }
+              100% {
+                  background-position: -${
+                    parseInt(item.bgMaxWidth) - parseInt(item.width)
+                  }px 0;
+              }
+          }`;
+        } else {
+          continuekeyframes += `
+           .target-animation${index}{
+              width:${item.width};
+              height:${item.height};
+              background-image: url('${item["background-image"]}');
+              background-size: ${item["background-size"]};
+              position: absolute;
+              background-position: ${item["background-position"]}; 
+              top: ${JSON.parse(item.start)[1]}px;
+              z-index: 10;
+              left: ${JSON.parse(item.start)[0]}px;
+              animation: run-go${index} ${item["animation-duration"]} ${
+            item["animation-delay"]
+          } ${item["animation-iteration-count"]} linear, run-over${index} ${
+            item["animation-duration"]
+          } ${item["animation-delay"]} ${item["animation-iteration-count"]} ${
+            item["animation-timing-function"]
+          };
+          }
+          @keyframes run-go${index} {
+              0% {
+                  left:${JSON.parse(item.start)[0]}px;
+              }
+  
+              100% {
+                  left: ${JSON.parse(item.end)[0]}px;
+              }
+          }
+          @keyframes run-over${index} {
+              0% {
+                  top: ${JSON.parse(item.start)[1]}px;
+              }
+  
+              100% {
+                  top: ${JSON.parse(item.end)[1]}px;
+              }
+          }
+          `;
+        }
+      });
+      const style = document.createElement("style");
+      style.id = `animation-${id}`;
+      style.setAttribute("type", "text/css");
+      style.innerHTML = continuekeyframes;
+      document.head.appendChild(style);
+    }
+  
+    onDestroy(() => {
+      // 清楚handleAniation
+      // 清除 style
+      var styleTag = document.getElementById(`animation-${id}`);   // Get the <ul> element with id="myList"
+      document.head.removeChild(styleTag);
+      var animationEle = document.querySelector("#animationEle");
+      // animationEle.removeEventListener(type, listener[, options]);
+    })
+  
+  </script>
+  
+  <div class={animationClass} id="animationEle" />
+  
+  <style>
+    .target-animation-none {
+      display: none;
+    }
+  </style>
+  
